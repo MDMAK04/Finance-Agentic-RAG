@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Env
+.env
+
+# Data
+data/documents/*.pdf
+data/csv/*.csv
+data/csv/*.xlsx
+!data/documents/.gitkeep
+!data/csv/.gitkeep
+
+# Qdrant
+qdrant_storage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
