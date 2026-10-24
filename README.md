@@ -2,122 +2,140 @@
 
 # 💹 Finance-Agent
 
-**Un assistant financier multi-agents propulsé par LangGraph, LangChain et Ollama.**
+### Système RAG agentique multi-agents pour l'analyse financière
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
-[![LangChain](https://img.shields.io/badge/LangChain-0.3-green.svg)](https://python.langchain.com/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-0.2-orange.svg)](https://langchain-ai.github.io/langgraph/)
-[![Qdrant](https://img.shields.io/badge/Qdrant-Vector%20DB-red.svg)](https://qdrant.tech/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+*Documents PDF, données CSV/Excel, exécution de code sécurisée et auto-correction des réponses, 100 % en local.*
+
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?logo=langchain&logoColor=white)](https://python.langchain.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-orchestration-orange)](https://langchain-ai.github.io/langgraph/)
+[![Ollama](https://img.shields.io/badge/Ollama-local%20LLM-000000?logo=ollama&logoColor=white)](https://ollama.com/)
+[![Qdrant](https://img.shields.io/badge/Qdrant-vector%20DB-DC244C)](https://qdrant.tech/)
+[![Chainlit](https://img.shields.io/badge/Chainlit-UI-F80061)](https://chainlit.io/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+[Fonctionnalités](#-fonctionnalités) •
+[Architecture](#-architecture) •
+[Démarrage rapide](#-démarrage-rapide) •
+[Configuration](#-configuration) •
+[Évaluation](#-évaluation-ragas) •
+[Structure](#-structure-du-projet)
+
+<br/>
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/screenshot_pdf.png" alt="Question sur un rapport annuel PDF" width="100%"/>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshot_csv.png" alt="Graphique généré à partir d'un CSV" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Agent RAG</b> : question sur un rapport annuel PDF</sub></td>
+    <td align="center"><sub><b>Agent Data Analyst</b> : graphique Plotly généré depuis un CSV</sub></td>
+  </tr>
+</table>
 
 </div>
 
 ---
 
-## 📖 À propos du projet
+## 📖 À propos
 
-**Finance-Agent** est un système RAG (Retrieval-Augmented Generation) agentique conçu pour analyser des rapports financiers (PDF) et des données de marché (CSV/Excel). 
+**Finance-Agent** est un assistant d'analyse financière qui combine **RAG** (Retrieval-Augmented Generation) et **agents autonomes**. Il répond à des questions portant sur :
 
-Contrairement à un simple chatbot, ce système utilise un **Superviseur intelligent** qui décide dynamiquement quel agent doit répondre à la requête. Il est également doté d'une **Sandbox de sécurité** pour exécuter le code généré par l'IA sans risque, et d'un **Agent Critique** pour vérifier la qualité des réponses.
+- des **rapports financiers au format PDF** (recherche sémantique dans le texte) ;
+- des **données de marché au format CSV / Excel** (analyse et visualisation par génération de code Python).
 
-<div align="center">
-  <img src="docs/screenshot_main.png" alt="Interface Finance-Agent" width="800"/>
-  <p><i>Interface Chainlit avec génération de graphiques et tableaux dynamiques.</i></p>
-</div>
+Contrairement à un chatbot RAG linéaire, un **Superviseur** décide dynamiquement quel agent traite chaque requête. Le code généré par le LLM est exécuté dans une **sandbox**, et un **agent Critique** valide la réponse avant affichage, avec relance automatique en cas d'échec.
 
-## ✨ Fonctionnalités Clés
+Tout fonctionne **en local** (Ollama + Qdrant) : aucune donnée financière ne quitte la machine pour l'inférence.
 
-- 🧠 **Architecture Multi-Agents (LangGraph)** : Routage intelligent des requêtes via un Superviseur.
-- 📄 **RAG Agent** : Recherche sémantique dans les PDFs via Qdrant et embeddings locaux.
-- 📊 **Data Analyst Agent** : Génération de code Python (Pandas/Plotly) pour analyser des CSV et créer des graphiques interactifs.
-- 🛡️ **Exécution Sécurisée (Sandbox)** : Blocage strict des imports dangereux (`os`, `subprocess`) lors de l'exécution du code LLM.
-- 🔍 **Auto-Correction (Critic)** : Vérification et validation des réponses avant affichage.
-- 🔒 **Local-First** : Confidentialité totale des données (Ollama + Qdrant locaux).
+---
 
-## 🏗️ Architecture du Système
+## ✨ Fonctionnalités
 
-```text
-                        USER
-                          ↓
-              Question + fichiers (PDF, CSV)
-                          ↓
-                  ┌───────────────┐
-                  │   SUPERVISOR  │
-                  └───────┬───────┘
-                          ↓
-          ┌───────────────┼───────────────┐
-          ↓               ↓               ↓
-     ┌─────────┐    ┌──────────┐    ┌──────────┐
-     │   RAG   │    │   DATA   │    │ GENERAL  │
-     │  AGENT  │    │ ANALYST  │    │  CHAT    │
-     └────┬────┘    └────┬─────┘    └────┬─────┘
-          ↓              ↓               ↓
-      PDF texte      CSV/Excel        Conversation
-          │              │
-          │              ↓
-          │        ┌──────────┐
-          │        │ SANDBOX  │
-          │        └────┬─────┘
-          │             ↓
-          └──────────────┼───────────────┘
-                         ↓
-                  ┌──────────────┐
-                  │ SYNTHESIZER  │
-                  └──────┬───────┘
-                         ↓
-                  ┌──────────────┐
-                  │    CRITIC    │
-                  └──────┬───────┘
-                         ↓
-                 Bonne réponse ?
-                  ┌──────┴──────┐
-                  ↓             ↓
-                 OUI           NON (Retry)
-                  ↓             ↓
-                 FIN      Retour SUPERVISOR
+| | Fonctionnalité | Description |
+|---|---|---|
+| 🧠 | **Orchestration multi-agents** | Graphe LangGraph avec un Superviseur qui route chaque requête vers l'agent adapté. |
+| 📄 | **Agent RAG** | Recherche sémantique dans les PDF via Qdrant et des embeddings locaux. |
+| 📊 | **Agent Data Analyst** | Génère du code Python (Pandas / Plotly) pour analyser des CSV/Excel et produire des graphiques interactifs. |
+| 🛡️ | **Exécution sécurisée** | Sandbox bloquant les imports dangereux (`os`, `subprocess`) dans le code produit par le LLM. |
+| 🔍 | **Auto-correction** | Un agent Critique évalue la réponse et déclenche une nouvelle tentative si nécessaire. |
+| 🔒 | **Local-first** | LLM et base vectorielle exécutés en local pour une confidentialité totale. |
+| 📏 | **Évaluation mesurée** | Benchmark RAGAS sur un « Golden Set » de questions. |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart TD
+    U(["Utilisateur<br/>Question + fichiers PDF / CSV"]) --> S{"🧭 Supervisor"}
+
+    S -->|"Documents"| R["RAG Agent"]
+    S -->|"Données tabulaires"| D["Data Analyst"]
+    S -->|"Conversation"| G["General Chat"]
+
+    R <--> Q[("Qdrant<br/>Vector DB")]
+    D --> SB["Sandbox"]
+
+    R --> SY["Synthesizer"]
+    SB --> SY
+    G --> SY
+
+    SY --> C{"Critic"}
+    C -->|"Réponse validée"| F(["Réponse finale"])
+    C -->|"Retry"| S
 ```
 
-## 🛠️ Stack Technique
+### Flux d'une requête
+
+1. **Supervisor** : analyse la question et les fichiers fournis, puis choisit l'agent.
+2. **Agent spécialisé** : le RAG interroge les PDF, le Data Analyst génère du code exécuté en sandbox, le Chat gère la conversation générale.
+3. **Synthesizer** : consolide les résultats en une réponse unique.
+4. **Critic** : valide la réponse ou renvoie la requête au Superviseur pour une nouvelle tentative.
+
+---
+
+## 🛠️ Stack technique
 
 | Catégorie | Technologies |
 |---|---|
 | Orchestration | LangGraph, LangChain |
-| LLM (Local) | Ollama (qwen2.5:7b) |
-| LLM (Évaluation) | Groq (openai/gpt-oss-120b) |
-| Embeddings | Ollama (nomic-embed-text) |
-| Vector DB | Qdrant |
-| Data / Viz | Pandas, Plotly |
+| LLM (local) | Ollama · `qwen2.5:7b` |
+| Embeddings | Ollama · `nomic-embed-text` |
+| Base vectorielle | Qdrant |
+| Data / Visualisation | Pandas, NumPy, Plotly, openpyxl |
+| Ingestion PDF | pypdf |
 | Interface | Chainlit |
-| Sécurité | Sandbox locale (blocage d'imports) |
+| Évaluation | RAGAS, Hugging Face `datasets` · LLM juge : Groq (`openai/gpt-oss-120b`) |
+| Sandbox | Blocage d'imports en local · intégration E2B (`e2b-code-interpreter`) |
+| Conteneurisation | Docker, Docker Compose |
 
-## 📊 Évaluation (RAGAS)
+---
 
-Afin de valider la fiabilité du système, une évaluation a été menée sur un "Golden Set" de questions (RAG, Data, General) en utilisant Groq comme LLM Juge.
-
-| Métrique | Score | Analyse |
-|---|---|---|
-| Answer Relevancy | 88.28% | Le système répond de manière très pertinente aux questions posées. |
-| Faithfulness | 50.00% | Le système a tendance à halluciner légèrement (limite du modèle 7B local). Amélioration : passer à un modèle 14B ou ajuster le prompt. |
-| Context Precision | 40.00% | La recherche vectorielle ramène parfois du bruit. Amélioration : ajouter un Reranker (ex: Cohere) pour filtrer les chunks. |
-
-## 🚀 Démarrage Rapide
+## 🚀 Démarrage rapide
 
 ### Prérequis
 
-- Python 3.11+
-- Docker
-- Ollama (installé et lancé)
+- [Python 3.11+](https://www.python.org/downloads/)
+- [Docker](https://www.docker.com/) (pour Qdrant)
+- [Ollama](https://ollama.com/) installé et lancé
 
 ### Installation
 
 ```bash
-# 1. Cloner le repo
+# 1. Cloner le dépôt
 git clone https://github.com/MDMAK04/finance-agentic-rag.git
 cd finance-agentic-rag
 
 # 2. Créer l'environnement virtuel
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows : .venv\Scripts\activate
 
 # 3. Installer les dépendances
 pip install -r requirements.txt
@@ -129,42 +147,126 @@ ollama pull nomic-embed-text
 
 ### Configuration
 
-Copie le fichier d'exemple et ajoute ta clé API Groq (nécessaire uniquement pour l'évaluation) :
-
 ```bash
 cp .env.example .env
 ```
 
+Les valeurs par défaut conviennent pour un usage 100 % local. Les clés API ne sont nécessaires que pour l'évaluation RAGAS et la sandbox E2B (voir [Configuration](#-configuration)).
+
 ### Lancement
 
 ```bash
-# 1. Lancer Qdrant en arrière-plan
+# 1. Démarrer Qdrant en arrière-plan
 docker compose up qdrant -d
 
-# 2. Lancer l'interface Chainlit
+# 2. Démarrer l'interface Chainlit
 chainlit run ui/app.py -w
 ```
 
-Ouvrez http://localhost:8000 dans votre navigateur.
+Ouvrir **http://localhost:8000** dans le navigateur, puis déposer un PDF ou un CSV et poser une question.
 
-## 📁 Structure du Projet
+---
+
+## ⚙️ Configuration
+
+Toute la configuration passe par le fichier `.env` (modèle : `.env.example`).
+
+| Variable | Valeur par défaut | Rôle |
+|---|---|---|
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Adresse du serveur Ollama |
+| `OLLAMA_MODEL` | `qwen2.5:7b` | LLM utilisé par les agents |
+| `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Modèle d'embeddings |
+| `QDRANT_URL` | `http://localhost:6333` | Adresse de Qdrant |
+| `QDRANT_COLLECTION` | `finance_docs` | Collection des documents indexés |
+| `OPENAI_API_KEY` / `OPENAI_MODEL` | — | Clé et modèle du LLM juge (évaluation RAGAS uniquement) |
+| `E2B_API_KEY` | — | Clé pour la sandbox E2B (optionnel) |
+| `CHUNK_SIZE` | `1000` | Taille des chunks de texte |
+| `CHUNK_OVERLAP` | `150` | Chevauchement entre chunks |
+| `TOP_K` | `5` | Nombre de chunks récupérés par requête |
+| `MAX_RETRIES` | `2` | Nombre maximal de relances après rejet du Critic |
+| `LOG_LEVEL` | `INFO` | Niveau de logs |
+
+---
+
+## 📊 Évaluation (RAGAS)
+
+La fiabilité du système est mesurée avec **RAGAS** sur un « Golden Set » de questions couvrant les trois types de requêtes (RAG, Data, General), avec Groq comme LLM juge.
+
+| Métrique | Score | Analyse |
+|---|---|---|
+| **Answer Relevancy** | **88.28 %** | Les réponses sont très pertinentes par rapport aux questions posées. |
+| **Faithfulness** | 50.00 % | Hallucinations légères, limite du modèle 7B local. |
+| **Context Precision** | 40.00 % | La recherche vectorielle remonte parfois du bruit. |
+
+### 🔭 Pistes d'amélioration
+
+- **Faithfulness** : passer à un modèle 14B ou plus, ou affiner les prompts.
+- **Context Precision** : ajouter un **Reranker** (ex. Cohere) pour filtrer les chunks avant génération.
+
+---
+
+## 📁 Structure du projet
 
 ```text
 finance-agentic-rag/
-├── agents/                  # Les agents (Supervisor, RAG, Data, Critic)
-├── core/                    # Infrastructure (Graph, LLM, Ingestion, Sandbox)
+├── agents/                  # Les agents du graphe
+│   ├── supervisor.py        #   Routage des requêtes
+│   ├── rag_agent.py         #   Recherche dans les PDF
+│   ├── data_agent.py        #   Analyse CSV/Excel + graphiques
+│   ├── general_agent.py     #   Conversation générale
+│   ├── synthesizer.py       #   Consolidation de la réponse
+│   └── critic.py            #   Validation / relance
+├── core/                    # Infrastructure
+│   ├── graph.py             #   Graphe LangGraph
+│   ├── state.py             #   État partagé du graphe
+│   ├── routing_rules.py     #   Règles de routage
+│   ├── llm.py               #   Configuration du LLM
+│   ├── ingestion.py         #   Ingestion et découpage des documents
+│   ├── vector_store.py      #   Accès à Qdrant
+│   └── sandbox/             #   Exécution sécurisée du code généré
+├── ui/
+│   └── app.py               # Interface Chainlit
 ├── evaluation/              # Scripts RAGAS et Golden Set
-├── ui/                      # Interface Chainlit
-├── data/                    # PDFs et CSV de test
+├── tests/                   # Tests
+├── data/                    # PDF et CSV d'exemple
 ├── docs/                    # Captures d'écran
+│   ├── screenshot_pdf.png
+│   └── screenshot_csv.png
+├── .chainlit/               # Configuration Chainlit
+├── chainlit.md              # Page d'accueil Chainlit
+├── .env.example             # Modèle de configuration
 ├── Dockerfile
 ├── docker-compose.yml
 └── requirements.txt
 ```
 
+---
+
+## 🐳 Docker
+
+`docker-compose.yml` définit deux services :
+
+| Service | Image / build | Ports |
+|---|---|---|
+| `qdrant` | `qdrant/qdrant:latest` | `6333`, `6334` (stockage persistant dans `./qdrant_storage`) |
+| `app` | build du `Dockerfile` (Python 3.11-slim) | `8000` |
+
+```bash
+docker compose up qdrant -d    # Qdrant seul (usage recommandé en local)
+```
+
+---
+
 ## 👤 Auteur
 
-**EL Makhloufi Mohammed**
+**Mohammed El Makhloufi**
+Étudiant en Master Machine Learning & Multimedia Intelligence (USMBA, Fès), orienté NLP / LLM / RAG.
 
-- 🌐 GitHub
-- 💼 LinkedIn
+[![GitHub](https://img.shields.io/badge/GitHub-MDMAK04-181717?logo=github&logoColor=white)](https://github.com/MDMAK04)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mohammed%20El%20Makhloufi-0A66C2?logo=linkedin&logoColor=white)](https://linkedin.com/in/mohammed-el-makhloufi)
+
+---
+
+## 📄 Licence
+
+Distribué sous licence MIT. Voir le fichier [`LICENSE`](LICENSE).
