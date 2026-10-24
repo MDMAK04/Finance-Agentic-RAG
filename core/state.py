@@ -2,7 +2,6 @@ from typing import TypedDict, Annotated, Any
 from operator import add
 
 class AgentState(TypedDict):
-    # 1. Entrées utilisateur
     question: str
     files: list
     
