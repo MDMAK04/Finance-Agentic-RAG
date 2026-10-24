@@ -21,13 +21,9 @@ async def start():
         "retry_count": 0,
         "history": []
     })
+    
     await cl.Message(
-        content="👋 Bienvenue sur **Finance-Agent** !\n\n"
-                "Vous pouvez :\n"
-                "- Poser une question générale sur la finance.\n"
-                "- Uploader un **PDF** (rapport annuel) et poser une question dessus.\n"
-                "- Uploader un **CSV/Excel** et demander une analyse de données.\n\n"
-                "Comment puis-je vous aider aujourd'hui ?"
+        content="\n\n\n\n# Finance-Agent\n\n**Posez votre question ou uploadez un fichier pour commencer.**"
     ).send()
 
 @cl.on_message
@@ -98,7 +94,7 @@ async def main(message: cl.Message):
     
     # On affiche le texte directement dans le chat (sans cadre)
     await cl.Message(content=final_answer).send()
-    
+
     # 5. Affichage des graphiques Plotly
     if state.get("figures"):
         for fig in state["figures"]:
