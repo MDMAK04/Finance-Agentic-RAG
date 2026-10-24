@@ -1,0 +1,27 @@
+[
+    {
+      "question": "What are the risk factors for acute stroke?",
+      "ground_truth": "The risk factors include a history of thrombotic events, antiphospholipid syndrome, chronic obstructive pulmonary disease (COPD), body mass index (BMI), and alcoholism.",
+      "expected_route": "rag"
+    },
+    {
+      "question": "Who is the author of the article?",
+      "ground_truth": "The author is Adrià Arboix.",
+      "expected_route": "rag"
+    },
+    {
+      "question": "What is the maximum price of AAPL stock?",
+      "ground_truth": "152",
+      "expected_route": "data"
+    },
+    {
+      "question": "What is inflation?",
+      "ground_truth": "Inflation is a general and continuous increase in the prices of goods and services in an economy, which reduces the value of money.",
+      "expected_route": "general"
+    },
+    {
+      "question": "What is the study about?",
+      "ground_truth": "The study is about cardiovascular risk factors for acute stroke: Risk profiles in the different subtypes of ischemic stroke.",
+      "expected_route": "rag"
+    }
+  ]

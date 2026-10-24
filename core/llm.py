@@ -1,4 +1,8 @@
 import os
+
+os.environ["OPENAI_API_BASE"] = "https://api.groq.com/openai/v1"
+os.environ["OPENAI_BASE_URL"] = "https://api.groq.com/openai/v1"
+
 from dotenv import load_dotenv
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_openai import ChatOpenAI 
@@ -25,5 +29,7 @@ def get_judge_llm():
     return ChatOpenAI(
         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         api_key=os.getenv("OPENAI_API_KEY"),
+        base_url="https://api.groq.com/openai/v1",
         temperature=0
     )
+
