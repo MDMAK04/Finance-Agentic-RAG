@@ -34,3 +34,4 @@ def run_code_safely(code: str, df: pd.DataFrame):
         
     except Exception as e:
         return None, None, str(e)
+    
