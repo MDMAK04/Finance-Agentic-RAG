@@ -1,6 +1,6 @@
 <div align="center">
 
-# 💹 Finance-Agent
+# Finance-Agent
 
 ### Système RAG agentique multi-agents pour l'analyse financière
 
