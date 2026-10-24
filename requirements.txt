@@ -17,3 +17,4 @@ datasets
 python-dotenv
 pydantic
 pydantic-settings
+pypdf
