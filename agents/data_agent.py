@@ -22,7 +22,8 @@ def data_agent(state: AgentState) -> dict:
     Génère UNIQUEMENT du code Python pour répondre à la question.
     - Le DataFrame s'appelle 'df'.
     - SI ET SEULEMENT SI la question demande un graphique, utilise 'px' (plotly.express) et stocke la figure dans 'fig'.
-    - IMPORTANT : Utilise EXCLUSIVEMENT les colonnes listées ci-dessus. N'invente aucun nom de colonne.
+    - IMPORTANT : Si tu génères un graphique, stocke AUSSI les données agrégées dans la variable 'resultat' (ex: df.groupby('region').sum()) pour que l'analyse textuelle soit correcte.
+    - Utilise EXCLUSIVEMENT les colonnes listées ci-dessus. N'invente aucun nom de colonne.
     - SINON, stocke le résultat dans 'resultat'.
     - Ne mets pas de print(), pas de balises Markdown.
     
@@ -45,10 +46,25 @@ def data_agent(state: AgentState) -> dict:
         
     # --- ÉTAPE 3 : Formulation de la réponse ---
     if fig is not None:
+        # On prépare les vraies données pour que le LLM analyse correctement
+        if isinstance(resultat, pd.Series):
+            data_to_analyze = resultat.to_frame().to_markdown()
+        elif isinstance(resultat, pd.DataFrame):
+            data_to_analyze = resultat.to_markdown()
+        else:
+            # Si l'IA n'a pas mis dans resultat, on lui donne un aperçu du dataframe
+            data_to_analyze = df.head(10).to_markdown()
+
         prompt_texte = f"""
         L'utilisateur a demandé : {question}
-        Un graphique a été généré avec succès.
-        Rédige une réponse professionnelle en 2 parties : 1. Phrase d'introduction. 2. Paragraphe d'analyse de la tendance.
+        Un graphique a été généré pour répondre à cette question.
+        Voici les VRAIES données qui ont servi à générer ce graphique :
+        {data_to_analyze}
+        
+        Rédige UN SEUL paragraphe d'analyse professionnelle (sans titre, sans numéro, sans liste à puces).
+        Commence directement par une phrase d'introduction fluide (ex: "L'analyse des données révèle que...") 
+        puis enchaîne immédiatement sur l'analyse des tendances, des comparaisons et des points remarquables.
+        Base-toi UNIQUEMENT sur les données fournies ci-dessus. Ne devine pas les noms.
         """
     else:
         if isinstance(resultat, pd.Series):
