@@ -1,10 +1,9 @@
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import re
 from core.state import AgentState
 from core.llm import get_llm
 from langchain_core.messages import HumanMessage, SystemMessage
+from core.sandbox.local_sandbox import run_code_safely
 
 def data_agent(state: AgentState) -> dict:
     print("[Data Agent] Analyse des données...")
@@ -14,10 +13,8 @@ def data_agent(state: AgentState) -> dict:
         return {"answer": "Erreur : Aucun fichier CSV trouvé.", "history": ["data_agent"]}
     
     question = state["question"]
-    # On liste les colonnes très clairement
     columns_list = ", ".join(df.columns)
     
-    # --- ÉTAPE 1 : Génération et exécution du code ---
     prompt_code = f"""
     Tu es un expert Python et Data Analyst.
     Voici les SEULES colonnes autorisées dans le DataFrame : {columns_list}
@@ -39,29 +36,21 @@ def data_agent(state: AgentState) -> dict:
     ])
     code = re.sub(r'^```python\n|```$', '', response.content.strip(), flags=re.MULTILINE)
     
-    # --- ÉTAPE 2 : Exécution du code ---
-    local_vars = {"df": df, "pd": pd, "px": px, "go": go}
-    try:
-        exec(code, {}, local_vars)
-        resultat = local_vars.get("resultat", None)
-        fig = local_vars.get("fig", None)
-    except Exception as e:
-        print(f"Erreur d'exécution : {e}")
-        return {"answer": f"L'analyse a échoué car l'IA a généré un code invalide. Détail : {str(e)}", "history": ["data_agent"]}
+    # --- EXÉCUTION SÉCURISÉE ---
+    resultat, fig, error_msg = run_code_safely(code, df)
+    
+    if error_msg:
+        print(f"Erreur bloquée par la Sandbox : {error_msg}")
+        return {"answer": f"L'analyse a échoué (Sandbox) : {error_msg}", "history": ["data_agent"]}
         
     # --- ÉTAPE 3 : Formulation de la réponse ---
     if fig is not None:
-        # Pour le graphique, on demande une analyse de la tendance
         prompt_texte = f"""
         L'utilisateur a demandé : {question}
         Un graphique a été généré avec succès.
-        
-        Rédige une réponse professionnelle en 2 parties :
-        1. Une phrase d'introduction : "Voici le graphique illustrant...".
-        2. Un paragraphe d'analyse : Décris ce que ce graphique montre (tendances, comparaisons, points hauts/bas).
+        Rédige une réponse professionnelle en 2 parties : 1. Phrase d'introduction. 2. Paragraphe d'analyse de la tendance.
         """
     else:
-        # Pour un tableau ou un chiffre, on formate proprement
         if isinstance(resultat, pd.Series):
             resultat_md = resultat.to_frame().to_markdown()
         elif isinstance(resultat, pd.DataFrame):
@@ -71,24 +60,19 @@ def data_agent(state: AgentState) -> dict:
             
         prompt_texte = f"""
         L'utilisateur a demandé : {question}
-        Voici le résultat de l'analyse : 
-        {resultat_md}
-        
+        Voici le résultat : {resultat_md}
         Rédige une phrase d'introduction claire, puis affiche le tableau Markdown.
         """
     
     reponse_llm = llm.invoke([
-        SystemMessage(content="Tu es un analyste financier expert. Tes analyses sont précises et professionnelles."),
+        SystemMessage(content="Tu es un analyste financier expert."),
         HumanMessage(content=prompt_texte)
     ])
     
-    answer_final = reponse_llm.content
-    figures_list = [fig] if fig is not None else []
-    
     return {
-        "answer": answer_final,
+        "answer": reponse_llm.content,
         "code": code,
         "result": str(resultat),
-        "figures": figures_list,
+        "figures": [fig] if fig is not None else [],
         "history": ["data_agent"]
     }
